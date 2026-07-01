@@ -1,0 +1,35 @@
+{
+  "name": "speakup",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "Packages": {
+        "$path": "Packages"
+      },
+      "Shared": {
+        "$path": "src/Shared"
+      },
+      "UI": {
+        "$path": "src/UI"
+      }
+    },
+    "ServerScriptService": {
+      "ServerPackages": {
+        "$path": "ServerPackages"
+      },
+      "Server": {
+        "$path": "src/Server"
+      }
+    },
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "Client": {
+          "$path": "src/Client"
+        }
+      }
+    },
+    "Workspace": {
+      "$ignoreUnknownInstances": true
+    }
+  }
+}
