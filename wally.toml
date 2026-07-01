@@ -9,3 +9,7 @@ promise = "evaera/promise@4.0.0"
 networker = "leifstout/networker@0.3.0"
 Signal = "sleitnick/signal@2.0.0"
 Roact = "roblox/roact@1.4.4"
+
+[server-dependencies]
+profileservice = "firebird702/profileservice@1.1.0"
+

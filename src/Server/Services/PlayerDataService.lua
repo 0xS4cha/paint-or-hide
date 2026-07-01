@@ -17,19 +17,11 @@ PlayerDataService.DataChanged = Signal.new()
 local profilesByPlayer: { [Player]: any } = {}
 
 local DEFAULT_DATA = {
-	Rank = "Visitor",
-	Vip = false,
+	Rank = Config.Ranks.DEFAULT_RANK,
 	PlayTime = 0,
 	Coins = Config.Game.DEFAULT_COINS,
-	CustomTitle = "",
-	Muted = false,
-	Banner = "Default",
-	Likes = 0,
-	Dislikes = 0,
-	LikedPlayers = {},
-	Comments = {},
 	Inventory = {},
-	Gifts = {},
+	Cards = {},
 	History = {},
 }
 
@@ -64,29 +56,13 @@ function PlayerDataService:Init()
 	task.spawn(function()
 		while true do
 			task.wait(Config.Game.PLAY_TIME_INTERVAL_SEC)
-			local successVip, VipService = pcall(function()
-				return require(script.Parent.VipService)
-			end)
 
 			for _, player in ipairs(Players:GetPlayers()) do
 				local profile = profilesByPlayer[player]
 				if profile then
 					self:Update(player, function(data)
-						local isMvp = data.Inventory and data.Inventory["sub_mvp_1month"] and data.Inventory["sub_mvp_1month"] > 0
-						local isVip = false
-						if successVip and VipService then
-							isVip = VipService:IsVip(player)
-						end
-
-						local multiplier = 1
-						if isMvp then
-							multiplier = 4
-						elseif isVip then
-							multiplier = 2
-						end
-
 						data.PlayTime = (data.PlayTime or 0) + 1
-						data.Coins = (data.Coins or 0) + (Config.Game.COINS_REWARD_AMOUNT * multiplier)
+						data.Coins = (data.Coins or 0) + Config.Game.COINS_REWARD_AMOUNT
 						return data
 					end)
 				end
@@ -121,9 +97,6 @@ function PlayerDataService:OnPlayerAdded(player: Player)
 
 			player:SetAttribute("PlayTime", profile.Data.PlayTime or 0)
 			player:SetAttribute("Coins", profile.Data.Coins or 0)
-			player:SetAttribute("Banner", profile.Data.Banner or "Default")
-			player:SetAttribute("Likes", profile.Data.Likes or 0)
-			player:SetAttribute("Dislikes", profile.Data.Dislikes or 0)
 		else
 			profile:Release()
 		end
@@ -164,7 +137,7 @@ function PlayerDataService:Update(player: Player, callback: (data: any) -> any)
 	for k, v in pairs(newData) do
 		if oldData[k] ~= v then
 			self.DataChanged:Fire(player, k, v)
-			if k == "PlayTime" or k == "Coins" or k == "Banner" or k == "Likes" or k == "Dislikes" then
+			if k == "PlayTime" or k == "Coins" then
 				player:SetAttribute(k, v)
 			end
 		end
@@ -180,26 +153,6 @@ function PlayerDataService:SetRank(player: Player, rank: string)
 	end)
 end
 
-function PlayerDataService:SetVip(player: Player, vip: boolean)
-	self:Update(player, function(data)
-		data.Vip = vip
-		return data
-	end)
-end
-function PlayerDataService:SetCustomTitle(player: Player, title: string)
-	self:Update(player, function(data)
-		data.CustomTitle = string.sub(title, 1, 30)
-		return data
-	end)
-end
-
-function PlayerDataService:SetBanner(player: Player, banner: string)
-	self:Update(player, function(data)
-		data.Banner = banner
-		return data
-	end)
-end
-
 function PlayerDataService:FetchData(player: Player)
 	local data = self:Get(player)
 	local retries = 0
@@ -211,18 +164,12 @@ function PlayerDataService:FetchData(player: Player)
 	return data
 end
 
-function PlayerDataService:FetchOtherPlayerData(player: Player, targetPlayer: Player)
+function PlayerDataService:FetchOtherPlayerData(_: Player, targetPlayer: Player)
 	local targetData = self:Get(targetPlayer)
 	if targetData then
 		return {
 			Rank = targetData.Rank,
-			Vip = targetData.Vip,
-			CustomTitle = targetData.CustomTitle,
 			PlayTime = targetData.PlayTime,
-			Banner = targetData.Banner or "Default",
-			Likes = targetData.Likes or 0,
-			Dislikes = targetData.Dislikes or 0,
-			Comments = targetData.Comments or {},
 		}
 	end
 	return nil
